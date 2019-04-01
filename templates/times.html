@@ -1,0 +1,45 @@
+{% extends '__base__.html' %}
+{% load tags %}
+
+{% block title %}时光{% endblock %}
+
+{% block beforehead %}
+
+<script>
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="uk-width-medium-3-4">
+    {% for time in times %}
+        <article class="uk-article">
+            <h2><a href="javascript:(0)">{{ time.introduction }}</a></h2>
+            <p class="uk-article-meta">发表于{% datetime_filter time.created_at %}</p>
+            <p class="uk-article-meta">天气：{{ time.weather }}</p>
+            <p>
+                {% if time.album_url|type_filter %}
+                    <video src="/statics/pic/{{ time.album_url }}" style="width: 50%;height: auto;" controls="controls" id="video"></video>
+                {% else %}
+                    <img src="/statics/pic/{{ time.album_url }}" class="img-responsive"  style="width: 50%;height: auto;" alt="" title="">
+                {% endif %}
+            </p>
+        </article>
+        <hr class="uk-article-divider">
+    {% endfor %}
+    </div>
+
+    <div class="uk-width-medium-1-4">
+        <div class="uk-panel uk-panel-header">
+            <h3 class="uk-panel-title">友情链接</h3>
+            <ul class="uk-list uk-list-line">
+                <li><i class="uk-icon-thumbs-o-up"></i> <a target="_blank" href="#">编程</a></li>
+                <li><i class="uk-icon-thumbs-o-up"></i> <a target="_blank" href="#">读书</a></li>
+                <li><i class="uk-icon-thumbs-o-up"></i> <a target="_blank" href="#">Python教程</a></li>
+                <li><i class="uk-icon-thumbs-o-up"></i> <a target="_blank" href="#">Git教程</a></li>
+            </ul>
+        </div>
+    </div>
+
+{% endblock %}

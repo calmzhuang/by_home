@@ -1,0 +1,106 @@
+{% extends '__base__.html' %}
+
+{% block title %}时光{% endblock %}
+
+{% block beforehead %}
+
+<script>
+
+function initVM(data) {
+    var vm = new Vue({
+        el: '#vm',
+        data: {
+            time_fragments: data.time_fragment,
+            page: data.page
+        },
+        methods: {
+            edit_time_fragment: function (time_fragment) {
+                location.assign('/bingyu/manage/time/edit?id=' + time_fragment.id);
+            },
+            delete_time_fragment: function (time_fragment) {
+                if (confirm('确认要删除“' + time_fragment.introduction + '”？删除后不可恢复！')) {
+                    postJSON('/bingyu/api/time/' + time_fragment.id + '/delete', function (err, r) {
+                        if (err) {
+                            return alert(err.message || err.error || err);
+                        }
+                        refresh();
+                    });
+                }
+            }
+        }
+    });
+    $('#vm').show();
+}
+
+$(function() {
+    getJSON('/bingyu/api/time', {
+        page: {{ page_index }}
+    }, function (err, results) {
+        if (err) {
+            return fatal(err);
+        }
+        $('#loading').hide();
+        initVM(results);
+    });
+});
+
+</script>
+
+{% endblock %}
+
+{% block content %}
+
+    <div class="uk-width-1-1 uk-margin-bottom">
+        <div class="uk-panel uk-panel-box">
+            <ul class="uk-breadcrumb">
+                <li><a href="/bingyu/manage/comments">评论</a></li>
+                <li><a href="/bingyu/manage/blogs">日志</a></li>
+                <li class="uk-active"><span>时光</span></li>
+                <li><a href="/bingyu/manage/envelope">寄语</a></li>
+                <li><a href="/bingyu/manage/users">用户</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="error" class="uk-width-1-1">
+    </div>
+
+    <div id="loading" class="uk-width-1-1 uk-text-center">
+        <span><i class="uk-icon-spinner uk-icon-medium uk-icon-spin"></i> 正在加载...</span>
+    </div>
+
+    <div id="vm" class="uk-width-1-1">
+        <a href="/bingyu/manage/time/create" class="uk-button uk-button-primary"><i class="uk-icon-plus"></i> 新时光</a>
+
+        <table class="uk-table uk-table-hover">
+            <thead>
+                <tr>
+                    <th class="uk-width-5-10">简介</th>
+                    <th class="uk-width-2-10">作者</th>
+                    <th class="uk-width-2-10">创建时间</th>
+                    <th class="uk-width-1-10">操作</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-repeat="time_fragment: time_fragments" >
+                    <td>
+                        <a target="_blank" v-attr="href: '/bingyu/time_fragment/'+time_fragment.id" v-text="time_fragment.introduction"></a>
+                    </td>
+                    <td>
+                        <a target="_blank" v-attr="href: '/bingyu/user/'+time_fragment.user_id" v-text="time_fragment.user_name"></a>
+                    </td>
+                    <td>
+                        <span v-text="time_fragment.created_at.toDateTime()"></span>
+                    </td>
+                    <td>
+                        <a href="#0" v-on="click: edit_time_fragment(time_fragment)"><i class="uk-icon-edit"></i>
+                        <a href="#0" v-on="click: delete_time_fragment(time_fragment)"><i class="uk-icon-trash-o"></i>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div v-component="pagination" v-with="page"></div>
+    </div>
+
+{% endblock %}

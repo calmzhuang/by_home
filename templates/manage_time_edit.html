@@ -1,0 +1,206 @@
+{% extends '__base__.html' %}
+
+{% block title %}编辑时光{% endblock %}
+
+{% block beforehead %}
+
+<style>
+</style>
+<script src="/statics/js/jquery.js"></script>
+<script src="/statics/js/upload.js"></script>
+<script src="/statics/js/spark-md5.js"></script>
+
+<script>
+
+var
+    ID = '{{ id }}',
+    action = '{{ action }}',
+    fileList = '',
+    album_md5 = '';
+
+function calculate(_this, f){
+    var fileReader = new FileReader(),
+        blobSlice = File.prototype.mozSlice || File.prototype.webkitSlice || File.prototype.slice,
+        file = fileList[0],
+        chunkSize = 2097152,
+        // read in chunks of 2MB
+        chunks = Math.ceil(file.size / chunkSize),
+        currentChunk = 0,
+        spark = new SparkMD5();
+    var file_type = file.type.split('/')[1];
+    fileReader.onload = function(e) {
+        spark.appendBinary(e.target.result); // append binary string
+        currentChunk++;
+
+        if (currentChunk < chunks) {
+            loadNext();
+        }
+        else {
+            album_md5 = spark.end() + '.' + file_type;
+            f(_this, album_md5)
+        }
+    };
+
+    function loadNext() {
+        var start = currentChunk * chunkSize,
+            end = start + chunkSize >= file.size ? file.size : start + chunkSize;
+
+        fileReader.readAsBinaryString(blobSlice.call(file, start, end));
+    };
+
+    loadNext();
+}
+
+function initVM(times) {
+    var vm = new Vue({
+        el: '#vm',
+        data: times,
+        methods: {
+            submit: function (event) {
+                event.preventDefault();
+                console.log(this);
+                if (fileList === '') {
+                    return location.assign('/bingyu/manage/time');
+                } else {
+                    calculate(this, f);
+                }
+            },
+            check_type: function (album_url) {
+                if (/[mp4|avi]$/.test(album_url)) {
+                    return 1
+                } else if (/[png|jpg]$/.test(album_url)) {
+                    return 2
+                } else {
+                    return 3
+                }
+            }
+        }
+    });
+    $('#vm').show();
+}
+
+function f(_this, album_md5) {
+    var $form = $('#vm').find('form');
+    _this.album_url = album_md5;
+    console.log(_this.$data);
+    $form.postJSON(action, _this.$data, function (err, r) {
+        if (eval(err) !== "") {
+            $form.showFormError(err);
+        }
+        else {
+            var form_data = new FormData();
+            form_data.append('file_name', album_md5);
+            form_data.append('file', fileList[0]);
+            $.ajax({
+                url: '/bingyu/upload_ajax/',
+                type: 'POST',
+                dataType: 'JSON',
+                processData: false,  // tell jquery not to process the data
+                contentType: false, // tell jquery not to set contentType
+                data: form_data,
+                success: function(data) {
+                    return location.assign('/bingyu/manage/time');
+
+                },
+                error: function (err) {
+                    if (err.responseText === '') {
+                        return location.assign('/bingyu/manage/time');
+                    }else {
+                        $form.showFormLoading(false);
+                        $form.showFormError(err.responseText);
+                    }
+                }
+            });
+        }
+    });
+}
+
+$(function () {
+    if (ID) {
+        getJSON('/bingyu/api/time/' + ID, function (err, times) {
+            if (err) {
+                return fatal(err);
+            }
+            $('#loading').hide();
+            console.log(err, times);
+            initVM(times);
+        });
+    }
+    else {
+        $('#loading').hide();
+        initVM({
+            introduction: '',
+            weather: '',
+            album_url: ''
+        });
+    }
+});
+
+
+</script>
+
+<script type="text/javascript">
+    window.onload=function () {
+        var dragImgUpload = new DragImgUpload("#drop_area",{
+            callback:function (files) {
+                //回调函数，可以传递给后台等等
+                var file = files[0];
+            }
+        })
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+
+    <div class="uk-width-1-1 uk-margin-bottom">
+        <div class="uk-panel uk-panel-box">
+            <ul class="uk-breadcrumb">
+                <li><a href="/bingyu/manage/comments">评论</a></li>
+                <li><a href="/bingyu/manage/blogs">日志</a></li>
+                <li><a href="/bingyu/manage/time">时光</a></li>
+                <li><a href="/bingyu/manage/envelope">寄语</a></li>
+                <li><a href="/bingyu/manage/users">用户</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div id="error" class="uk-width-1-1">
+    </div>
+
+    <div id="loading" class="uk-width-1-1 uk-text-center">
+        <span><i class="uk-icon-spinner uk-icon-medium uk-icon-spin"></i> 正在加载...</span>
+    </div>
+
+    <div id="vm" class="uk-width-2-3">
+        <form v-on="submit: submit" class="uk-form uk-form-stacked">
+            <div class="uk-alert uk-alert-danger uk-hidden"></div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">简介:</label>
+                <div class="uk-form-controls">
+                    <input v-model="introduction" name="name" type="text" placeholder="简介" class="uk-width-1-1">
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">天气:</label>
+                <div class="uk-form-controls">
+                    <textarea v-model="weather" rows="4" name="summary" placeholder="天气" class="uk-width-1-1" style="resize:none;"></textarea>
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <label class="uk-form-label">时光片段:</label>
+
+                <div class="uk-form-controls">
+                    <div id="drop_area">
+
+                    </div>
+                </div>
+            </div>
+            <div class="uk-form-row">
+                <button type="submit" class="uk-button uk-button-primary"><i class="uk-icon-save"></i> 保存</button>
+                <a href="/bingyu/manage/time" class="uk-button"><i class="uk-icon-times"></i> 取消</a>
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
