@@ -436,6 +436,8 @@ $(function () {
 $(function() {
     if (location.pathname === '/' || location.pathname.indexOf('/blog')===0) {
         $('li[data-url=blogs]').addClass('uk-active');
+    } else if (location.pathname === '/bingyu/time' || location.pathname.indexOf('/bingyu/time')===0) {
+        $('li[data-url=times]').addClass('uk-active');
     }
 });
 

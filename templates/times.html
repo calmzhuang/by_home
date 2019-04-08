@@ -20,7 +20,7 @@
             <p class="uk-article-meta">天气：{{ time.weather }}</p>
             <p>
                 {% if time.album_url|type_filter %}
-                    <video src="/statics/pic/{{ time.album_url }}" style="width: 50%;height: auto;" controls="controls" id="video"></video>
+                    <video src="/statics/pic/{{ time.album_url }}" preload="none" style="width: 50%;height: auto;" controls="controls" id="video"></video>
                 {% else %}
                     <img src="/statics/pic/{{ time.album_url }}" class="img-responsive"  style="width: 50%;height: auto;" alt="" title="">
                 {% endif %}

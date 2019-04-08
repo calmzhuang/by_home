@@ -27,6 +27,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+SECURE_SSL_REDIRECT = True
 
 # Application definition
 
@@ -38,6 +39,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'bingyu.apps.BingyuConfig',
+    'werkzeug_debugger_runserver',
+    'django_extensions',
+    'sslserver',
 ]
 
 MIDDLEWARE = [
