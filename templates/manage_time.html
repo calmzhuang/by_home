@@ -19,7 +19,7 @@ function initVM(data) {
             },
             delete_time_fragment: function (time_fragment) {
                 if (confirm('确认要删除“' + time_fragment.introduction + '”？删除后不可恢复！')) {
-                    postJSON('/bingyu/api/time/' + time_fragment.id + '/delete', function (err, r) {
+                    postJSON('/bingyu/api/time/' + time_fragment.id + '/delete/', function (err, r) {
                         if (err) {
                             return alert(err.message || err.error || err);
                         }
@@ -84,7 +84,7 @@ $(function() {
             <tbody>
                 <tr v-repeat="time_fragment: time_fragments" >
                     <td>
-                        <a target="_blank" v-attr="href: '/bingyu/time_fragment/'+time_fragment.id" v-text="time_fragment.introduction"></a>
+                        <a target="_blank" v-attr="href: '/bingyu/manage/time/edit?id='+time_fragment.id" v-text="time_fragment.introduction"></a>
                     </td>
                     <td>
                         <a target="_blank" v-attr="href: '/bingyu/user/'+time_fragment.user_id" v-text="time_fragment.user_name"></a>
