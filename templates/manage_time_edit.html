@@ -58,9 +58,22 @@ function initVM(times) {
         methods: {
             submit: function (event) {
                 event.preventDefault();
-                console.log(this);
-                if (fileList === '') {
-                    return location.assign('/bingyu/manage/time');
+                var $form = $('#vm').find('form');
+                if (jQuery.trim(this.$data.introduction) === '') {
+                    $form.showFormError('简介不可为空');
+                } else if (jQuery.trim(this.$data.weather) === '') {
+                    $form.showFormError('天气不可为空');
+                } else if (fileList === '' && ID === '') {
+                    $form.showFormError('时光片段不可为空');
+                }else if (fileList === '' && ID !== '') {
+                    $form.postJSON(action, this.$data, function (err, r) {
+                        if (eval(err) !== "") {
+                            $form.showFormError(err);
+                        }
+                        else {
+                            return location.assign('/bingyu/manage/time');
+                        }
+                    });
                 } else {
                     calculate(this, f);
                 }

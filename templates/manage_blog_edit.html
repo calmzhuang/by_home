@@ -18,7 +18,14 @@ function initVM(blog) {
             submit: function (event) {
                 event.preventDefault();
                 var $form = $('#vm').find('form');
-                $form.postJSON(action, this.$data, function (err, r) {
+                if (jQuery.trim(this.$data.name) === '') {
+                    $form.showFormError('标题不可为空');
+                } else if (jQuery.trim(this.$data.summary) === '') {
+                    $form.showFormError('摘要不可为空');
+                } else if (jQuery.trim(this.$data.content) === '') {
+                    $form.showFormError('内容不可为空');
+                } else {
+                    $form.postJSON(action, this.$data, function (err, r) {
                     if (eval(err) !== "") {
                         $form.showFormError(err);
                     }
@@ -26,6 +33,7 @@ function initVM(blog) {
                         return location.assign('/bingyu/manage/blogs');
                     }
                 });
+                }
             }
         }
     });
